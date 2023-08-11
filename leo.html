@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AES ENCRYPTION</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const apiKey = '6cc645e01ce004349635863659e0b48696153af2e69fbfa225fb148043b7dc53';
+        const username = 'Tony kip';
+
+        function encryptMessage() {
+            const messageInput = document.getElementById('message');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            
+            const secretKey = "your-secret-key"; // Replace with your actual secret key
+            const encryptedMessage = CryptoJS.AES.encrypt(messageInput.value, secretKey).toString();
+            
+            const emailContent = encodeURIComponent(encryptedMessage);
+            const emailLink = `mailto:${emailInput.value}?subject=Encrypted%20Message&body=${emailContent}`;
+            window.location.href = emailLink;
+
+            const otp = generateOTP();
+            sendOTP(phoneInput.value, otp);
+        }
+
+        function decryptMessage() {
+            const encryptedMessage = prompt("Enter the encrypted message:");
+            const otp = prompt("Enter the OTP sent to your phone:");
+
+            verifyOTP(otp).then(valid => {
+                if (valid) {
+                    const secretKey = "your-secret-key"; // Replace with your actual secret key
+                    const decryptedBytes = CryptoJS.AES.decrypt(encryptedMessage, secretKey);
+                    const decryptedMessage = decryptedBytes.toString(CryptoJS.enc.Utf8);
+                    alert("Decrypted Message: " + decryptedMessage);
+                } else {
+                    alert("Invalid OTP");
+                }
+            });
+        }
+
+        function generateOTP() {
+            return Math.floor(1000 + Math.random() * 9000).toString();
+        }
+
+        function sendOTP(phone, otp) {
+            const url = `https://api.africastalking.com/version1/messaging?username=${username}&to=${phone}&message=Your%20OTP%20is%20${otp}`;
+            $.ajax({
+                type: 'POST',
+                url: url,
+                headers: {
+                    'apiKey': apiKey,
+                },
+                success: function(data) {
+                    alert('OTP Sent Successfully!');
+                },
+                error: function(error) {
+                    alert('Error sending OTP: ' + error.responseJSON.description);
+                }
+            });
+        }
+
+        function verifyOTP(otp) {
+            return new Promise(resolve => {
+                // You should implement the OTP verification using Africa's Talking API
+                // Check the OTP provided by the user against the one sent via SMS
+                // Resolve with true if OTP is valid, false otherwise
+                resolve(false); // Simulated response
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Secure Messaging</h1>
+    <label for="message">Message:</label>
+    <textarea id="message" rows="4" cols="50"></textarea>
+    <br>
+    <label for="email">Recipient's Email:</label>
+    <input type="email" id="email">
+    <br>
+    <label for="phone">Your Phone Number:</label>
+    <input type="text" id="phone">
+    <br>
+    <button onclick="encryptMessage()">Send Encrypted Message</button>
+    <br>
+    <hr>
+    <h2>Decrypt Message</h2>
+    <button onclick="decryptMessage()">Decrypt Message</button>
+</body>
+</html>
